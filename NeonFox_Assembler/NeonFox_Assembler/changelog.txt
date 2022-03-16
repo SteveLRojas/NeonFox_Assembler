@@ -37,3 +37,4 @@ Revision 3:
 Revision 4:
 	Added code to properly check for overlap between segments (sorts segments before checking).
 	Added hash map for labels and checks to make sure labels are not declared more than once.
+	Fixed bug in BRN, BRZ, BRNN, and BRNZ instructions (encoding for N and Z was swapped).

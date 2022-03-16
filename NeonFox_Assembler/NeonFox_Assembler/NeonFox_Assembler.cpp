@@ -1035,7 +1035,7 @@ void m_brz(linked_source* current_source, linked_instruction* current_instructio
 	remove_spaces(operands);
 	immediate_value = label_or_immediate_value(operands, source_segment_head, current_source->n_line, current_source->name_index);
 	branch_offset = immediate_value - (current_instruction->address >> 1);
-	current_instruction->instruction_high = 0xC4 | ((branch_offset >> 8) & 0x03);
+	current_instruction->instruction_high = 0xC8 | ((branch_offset >> 8) & 0x03);
 	current_instruction->instruction_low = branch_offset & 0xFF;
 	if((branch_offset > 511) || (branch_offset < -512))
 		printf("Warning: BRZ instruction at line %lu in file %s cannot reach target!\n", current_source->n_line, name_table[current_source->name_index]);
@@ -1052,7 +1052,7 @@ void m_brn(linked_source* current_source, linked_instruction* current_instructio
 	remove_spaces(operands);
 	immediate_value = label_or_immediate_value(operands, source_segment_head, current_source->n_line, current_source->name_index);
 	branch_offset = immediate_value - (current_instruction->address >> 1);
-	current_instruction->instruction_high = 0xC8 | ((branch_offset >> 8) & 0x03);
+	current_instruction->instruction_high = 0xC4 | ((branch_offset >> 8) & 0x03);
 	current_instruction->instruction_low = branch_offset & 0xFF;
 	if((branch_offset > 511) || (branch_offset < -512))
 		printf("Warning: BRN instruction at line %lu in file %s cannot reach target!\n", current_source->n_line, name_table[current_source->name_index]);
@@ -1103,7 +1103,7 @@ void m_brnz(linked_source* current_source, linked_instruction* current_instructi
 	remove_spaces(operands);
 	immediate_value = label_or_immediate_value(operands, source_segment_head, current_source->n_line, current_source->name_index);
 	branch_offset = immediate_value - (current_instruction->address >> 1);
-	current_instruction->instruction_high = 0xD4 | ((branch_offset >> 8) & 0x03);
+	current_instruction->instruction_high = 0xD8 | ((branch_offset >> 8) & 0x03);
 	current_instruction->instruction_low = branch_offset & 0xFF;
 	if((branch_offset > 511) || (branch_offset < -512))
 		printf("Warning: BRNZ instruction at line %lu in file %s cannot reach target!\n", current_source->n_line, name_table[current_source->name_index]);
@@ -1120,7 +1120,7 @@ void m_brnn(linked_source* current_source, linked_instruction* current_instructi
 	remove_spaces(operands);
 	immediate_value = label_or_immediate_value(operands, source_segment_head, current_source->n_line, current_source->name_index);
 	branch_offset = immediate_value - (current_instruction->address >> 1);
-	current_instruction->instruction_high = 0xD8 | ((branch_offset >> 8) & 0x03);
+	current_instruction->instruction_high = 0xD4 | ((branch_offset >> 8) & 0x03);
 	current_instruction->instruction_low = branch_offset & 0xFF;
 	if((branch_offset > 511) || (branch_offset < -512))
 		printf("Warning: BRNN instruction at line %lu in file %s cannot reach target!\n", current_source->n_line, name_table[current_source->name_index]);
