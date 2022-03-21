@@ -52,10 +52,8 @@ typedef struct LINKED_BINARY_SEGMENT
 	struct LINKED_BINARY_SEGMENT* next;
 } linked_binary_segment;
 
-//const char* mnemonics[] = {"MOVE", "ADD", "AND", "XOR", "XEC", "NZT", "XMIT", "JMP", "CALL", "RET", "NOP", "ORG"};
-//#define N_MNEMONICS 12
-const char* mnemonics[] = {"ADD", "ADDC", "SUB", "SUBC", "MOVE", "TEST", "NOT", "ROR", "ROL", "AND", "XOR", "OR", "CALL", "CALLX", "CALLL", "CALLLX", "RET", "RETX", "RETL", "RETLX", "JMP", "JMPL", "NOP", "BRZ", "BRN", "BRP", "BRA", "BRNZ", "BRNN", "BRNP", "LIM", "BITT", "ORG"};
-#define N_MNEMONICS 33
+const char* mnemonics[] = {"ADD", "ADDC", "SUB", "SUBC", "MOVE", "TEST", "NOT", "ROR", "ROL", "AND", "XOR", "OR", "CALL", "CALLX", "CALLL", "CALLLX", "RET", "RETX", "RETL", "RETLX", "JMP", "JMPL", "NOP", "BRZ", "BRN", "BRP", "BRA", "BRNZ", "BRNN", "BRNP", "LIM", "BITT", "DATA", "ORG"};
+#define N_MNEMONICS 34
 #define ORG_IDX (N_MNEMONICS - 1)
 
 const char include_string[] = "INCLUDE";
@@ -111,6 +109,7 @@ void m_brnn (linked_source* current_source, linked_instruction* current_instruct
 void m_brnp (linked_source* current_source, linked_instruction* current_instruction, linked_source_segment* source_segment_head);
 void m_lim  (linked_source* current_source, linked_instruction* current_instruction, linked_source_segment* source_segment_head);
 void m_bitt (linked_source* current_source, linked_instruction* current_instruction, linked_source_segment* source_segment_head);
+void p_data (linked_source* current_source, linked_instruction* current_instruction, linked_source_segment* source_segment_head);
 void p_error(linked_source* current_source, linked_instruction* current_instruction, linked_source_segment* source_segment_head);
 void assemble_data(uint8_t opcode, linked_source* current_source, linked_instruction* current_instruction, linked_source_segment* source_segment_head);
 

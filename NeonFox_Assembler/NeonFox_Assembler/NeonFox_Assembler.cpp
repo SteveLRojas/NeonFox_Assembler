@@ -155,9 +155,10 @@ int main(int argc, char** argv)
 				++buf_i;
 			}
 			include_name_buf[buf_i]='\0';
-
+			
+			printf("Loading file %s\n", include_name_buf);
 			load_file(include_name_buf, new_head);
-			include_merge(head, current_node, new_head);
+			include_merge(prev_node, current_node, new_head);
 			free(current_node->s_label);
 			free(current_node->s_line);
 			free(current_node);
@@ -451,6 +452,9 @@ int main(int argc, char** argv)
 					break;
 				case 31:	// BITT 
 					m_bitt(current_source, current_instruction, source_segment_head);
+					break;
+				case 32:	//DATA
+					p_data(current_source, current_instruction, source_segment_head);
 					break;
 				default:
 					p_error(current_source, current_instruction, source_segment_head);
@@ -1217,7 +1221,7 @@ void m_bitt(linked_source* current_source, linked_instruction* current_instructi
 		bit += 8;
 	else if(first[0] == 'S')
 		bit = bit ^ 8;
-	else if(first[0] != 'W' || first[0] != 'L')
+	else if(first[0] != 'W' && first[0] != 'L')
 	{
 		fprintf(stderr, "Invalid byte enable in %s instruction at line: %lu in file %s\n", mnemonics[current_source->mnemonic_index], current_source->n_line, name_table[current_source->name_index]);
 		exit(1);
@@ -1236,6 +1240,29 @@ void m_bitt(linked_source* current_source, linked_instruction* current_instructi
 		current_instruction->instruction_low,
 		mnemonics[current_source->mnemonic_index], 
 		first, second, third);
+	}
+}
+
+void p_data(linked_source* current_source, linked_instruction* current_instruction, linked_source_segment* source_segment_head)
+{
+	remove_spaces(current_source->s_operands);
+	unsigned long immediate;
+	
+	immediate = label_or_immediate_value(current_source->s_operands, source_segment_head, current_source->n_line, current_source->name_index);
+	current_instruction->instruction_high = (immediate >> 8);
+	current_instruction->instruction_low = immediate & 0xFF;
+	if(immediate >> 16)
+	{
+		printf("Warning: Data at line %lu in file %s truncated to 16 bits!\n", current_source->n_line, name_table[current_source->name_index]);
+	}
+	//debug output
+	if(debug_enable)
+	{
+		printf("%lX\t%X %X\t%s\n", 
+		current_instruction->address >> 1, 
+		current_instruction->instruction_high, 
+		current_instruction->instruction_low,
+		mnemonics[current_source->mnemonic_index]);
 	}
 }
 

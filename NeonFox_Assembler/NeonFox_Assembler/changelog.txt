@@ -38,3 +38,5 @@ Revision 4:
 	Added code to properly check for overlap between segments (sorts segments before checking).
 	Added hash map for labels and checks to make sure labels are not declared more than once.
 	Fixed bug in BRN, BRZ, BRNN, and BRNZ instructions (encoding for N and Z was swapped).
+	Fixed bug in include functionality (files were getting included at the start of the file and multiple includes resulted in infinite loop).
+	Fixed bug in m_bit function.
