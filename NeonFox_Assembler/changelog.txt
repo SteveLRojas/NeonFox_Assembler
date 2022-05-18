@@ -40,3 +40,8 @@ Revision 4:
 	Fixed bug in BRN, BRZ, BRNN, and BRNZ instructions (encoding for N and Z was swapped).
 	Fixed bug in include functionality (files were getting included at the start of the file and multiple includes resulted in infinite loop).
 	Fixed bug in m_bit function.
+
+Revision 5:
+	Converted source files to C.
+	Created makefile.
+	
