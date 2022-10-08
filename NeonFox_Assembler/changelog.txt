@@ -45,3 +45,18 @@ Revision 5:
 	Converted source files to C.
 	Created makefile.
 	
+Revision 6:
+	Created new NeonFox_Macro_Assembler project from NeonFox_Assembler.
+	Added code to handle macros in preprocessor pass.
+	Added support for lowercase file names and char literals.
+	Addes support for spaces in file names and char literals.
+	Removed unused parameters in multiple functions.
+	Cleaned up code (added explicit type conversions to avoid warnings).
+	
+Revision 7:
+	Split pre-processor to its own file
+	Pre-processor can now attach labels to macro instances 
+	Refactor to use Flex for scanning 
+	Simplify data structures into new "Molecule" for scanning, parsing, and generating 
+	Better error checking 
+	

@@ -1,11 +1,11 @@
 CFLAGS=-std=c99 -pedantic -Wall -Wextra -Wconversion -D_XOPEN_SOURCE -march=native -O3
-LDLIBS=-lm
+LDLIBS=-lm -lfl
 
 .PHONY: all
 
 all: nfasm.exe
 
-nfasm.exe: NeonFox_Assembler.o
+nfasm.exe: NeonFox_Assembler.o lex.yy.o scannerhelper.o preprocessor.o
 
 %.exe:
 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@

@@ -1,11 +1,41 @@
 #define true 1
+
+
 typedef struct S_RANGE
 {
-	unsigned long start_address;
-	unsigned long end_address;
+	uint64_t start_address;
+	uint64_t end_address;
 } s_range;
 
-s_range* range_table = NULL;
+
+unsigned int range_table_determine_size(linked_instruction* instruction_head)
+{
+	unsigned int num_segments = 0;
+
+	// Get first instruction
+	linked_instruction* current_instruction = instruction_head->next;
+	if(!current_instruction)
+	{
+		return num_segments;
+	}
+
+	// Get starting address
+	uint64_t prev_word_address = current_instruction->word_address; 
+	current_instruction = current_instruction->next;
+
+	// Search for discontinuities 
+	while(current_instruction)
+	{
+		if (current_instruction->word_address != (prev_word_address + 1))
+			++num_segments;
+
+		prev_word_address = current_instruction->word_address;
+		current_instruction = current_instruction->next;
+	}
+	++num_segments;
+
+	return num_segments;
+}
 
 void range_heapify_down(s_range* heap, unsigned int heap_size, unsigned int index)
 {
@@ -13,17 +43,20 @@ void range_heapify_down(s_range* heap, unsigned int heap_size, unsigned int inde
 	unsigned int right_index;
 	unsigned int largest;
 	s_range temp;
+
 	while(true)
 	{
 		left_index = index * 2 + 1;
 		right_index = index * 2 + 2;
 		largest = index;
+
 		if((left_index < heap_size) && (heap[left_index].start_address > heap[largest].start_address))
 			largest = left_index;
 		if((right_index < heap_size) && (heap[right_index].start_address > heap[largest].start_address))
 			largest = right_index;
 		if(largest == index)
 			return;
+
 		temp = heap[index];
 		heap[index] = heap[largest];
 		heap[largest] = temp;
@@ -50,54 +83,75 @@ void range_heapsort(s_range* elements, unsigned int size)
 		elements[end] = elements[0];
 		elements[0] = temp;
 		--size;
+
 		range_heapify(elements, size);
 	}
 	return;
 }
 
-void build_range_table(linked_binary_segment* segments, unsigned int num_segments)
+s_range* range_table_build(linked_instruction* instruction_head, unsigned int num_segments)
 {
-	range_table = (s_range*)malloc(num_segments * sizeof(s_range));
+	s_range* range_table = (s_range*)malloc(num_segments * sizeof(s_range));
+
+	// Get first instruction/range
+	linked_instruction* current_instruction = instruction_head->next;
+	uint64_t start_word_address = current_instruction->word_address;
+	uint64_t end_word_address = current_instruction->word_address;
+	current_instruction = current_instruction->next;
+
+	// Search for discontinuities 
 	unsigned int index = 0;
-	while(1)
+	while(current_instruction)
 	{
-		segments = segments->next;
-		if(segments == NULL)
-			break;
-		range_table[index].start_address = segments->start_address;
-		range_table[index].end_address = segments->end_address;
-		++index;
+		if (current_instruction->word_address != (end_word_address + 1))
+		{
+			//do the thing
+			range_table[index].start_address = start_word_address;
+			range_table[index].end_address = end_word_address;
+
+			//update the thing
+			++index;
+			start_word_address = current_instruction->word_address;
+			end_word_address = current_instruction->word_address;
+		}
+
+		end_word_address = current_instruction->word_address;
+		current_instruction = current_instruction->next;
 	}
+	//do the thing
+	range_table[index].start_address = start_word_address;
+	range_table[index].end_address = end_word_address;
+
 	range_heapsort(range_table, num_segments);
-	return;
+	return range_table;
 }
 
-void print_range_table(unsigned int num_segments)
+void range_table_print(s_range* range_table, unsigned int num_segments)
 {
 	for(unsigned int d = 0; d < num_segments; ++d)
 	{
 		printf("Segment: %u\n", d);
-		printf("\t Start address: %lu\n", range_table[d].start_address / 2);
-		printf("\t End address: %lu\n", range_table[d].end_address / 2);
+		printf("\t Start address: %llu\n", range_table[d].start_address);
+		printf("\t End address: %llu\n", range_table[d].end_address);
 	}
 	return;
 }
 
-void check_range_table(unsigned int num_segments)
+void range_table_check(s_range* range_table, unsigned int num_segments)
 {
 	--num_segments;
 	unsigned int d = 0;
 	while(d < num_segments)
 	{
-		unsigned long end = range_table[d].end_address;
-		unsigned long start = range_table[++d].start_address;
+		uint64_t end = range_table[d].end_address;
+		uint64_t start = range_table[++d].start_address;
 		if(end >= start)
-			printf("Warning: Segment at offset %lu overlaps with previous segment.\n", (range_table[d].start_address) / 2);
+			printf("Warning: Segment at offset %llu overlaps with previous segment.\n", (range_table[d].start_address) / 2);
 	}
 	return;
 }
 
-inline void free_range_table()
+inline void range_table_free(s_range* range_table)
 {
 	free(range_table);
 	return;
