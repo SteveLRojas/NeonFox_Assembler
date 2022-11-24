@@ -131,8 +131,8 @@ void range_table_print(s_range* range_table, unsigned int num_segments)
 	for(unsigned int d = 0; d < num_segments; ++d)
 	{
 		printf("Segment: %u\n", d);
-		printf("\t Start address: %llu\n", range_table[d].start_address);
-		printf("\t End address: %llu\n", range_table[d].end_address);
+		printf("\t Start address: %lu\n", range_table[d].start_address);
+		printf("\t End address: %lu\n", range_table[d].end_address);
 	}
 	return;
 }
@@ -146,7 +146,7 @@ void range_table_check(s_range* range_table, unsigned int num_segments)
 		uint64_t end = range_table[d].end_address;
 		uint64_t start = range_table[++d].start_address;
 		if(end >= start)
-			printf("Warning: Segment at offset %llu overlaps with previous segment.\n", (range_table[d].start_address) / 2);
+			printf("Warning: Segment at offset %lu overlaps with previous segment.\n", (range_table[d].start_address) / 2);
 	}
 	return;
 }

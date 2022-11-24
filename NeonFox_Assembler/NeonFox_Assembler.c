@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 			}
 			else if(str_comp_partial(debug_string, flag))
 			{
-				debug_enable = 0xFF;
+				g_debug_level = (uint8_t)strtol(argv[++arg], NULL, 10);
 			}
 			++arg;
 		}
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 	//Create LST file
 	char* lst_name = (char*)malloc(str_size(argv[asm_index]) + 4);
 	replace_file_extension(".LST", argv[asm_index], lst_name);
-	preprocess(argv[asm_index], lst_name, debug_enable);
+	preprocess(argv[asm_index], lst_name, g_debug_level);
 
 	// Set-up scanner globals
 	g_label_count = 0;
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 	free(lst_name);
 
 	
-	if (debug_enable) // Print whole molecule list
+	if (g_debug_level >= 3) // Print whole molecule list
 	{
 		current_molecule = molecule_head->next;
 		while(current_molecule)
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 
 	//write binary file
 	uint64_t prg_size = get_binary_size_bytes(instruction_head);
-	printf("Prog size: %llu\n", prg_size);
+	printf("Prog size: %lu\n", prg_size);
 	uint8_t* output_arr = (uint8_t*)malloc(prg_size);
 
 	for(uint64_t d = 0; d < prg_size; ++d)
@@ -331,9 +331,9 @@ void m_test(molecule* current_molecule, linked_instruction* current_instruction)
 	current_instruction->instruction_low = (uint8_t)(((source & 0x07) << 5) | (source & 0x1F));
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %u\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -378,9 +378,9 @@ void m_call(molecule* current_molecule, linked_instruction* current_instruction)
 	current_instruction->instruction_low = 0x00;
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t\n", 
+		printf("%lX\t%X %X\t%s\t\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -397,9 +397,9 @@ void m_calll(molecule* current_molecule, linked_instruction* current_instruction
 	current_instruction->instruction_low = (uint8_t)(immediate_value & 0xFF);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %u %u\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -414,9 +414,9 @@ void m_ret(molecule* current_molecule, linked_instruction* current_instruction)
 	current_instruction->instruction_low = 0x00;
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t\n", 
+		printf("%lX\t%X %X\t%s\t\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -433,9 +433,9 @@ void m_retl(molecule* current_molecule, linked_instruction* current_instruction)
 	current_instruction->instruction_low = (uint8_t)(immediate_value & 0xFF);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %u %u\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -450,9 +450,9 @@ void m_jmp(molecule* current_molecule, linked_instruction* current_instruction)
 	current_instruction->instruction_low = 0x00;
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t\n", 
+		printf("%lX\t%X %X\t%s\t\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -469,9 +469,9 @@ void m_jmpl(molecule* current_molecule, linked_instruction* current_instruction)
 	current_instruction->instruction_low = (uint8_t)(immediate_value & 0xFF);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %u %u\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -486,9 +486,9 @@ void m_nop(linked_instruction* current_instruction)
 	current_instruction->instruction_low = 0x00;
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t\n", 
+		printf("%lX\t%X %X\t%s\t\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -511,14 +511,14 @@ void m_brz(molecule* current_molecule, linked_instruction* current_instruction)
 			current_molecule->s_source_file);
 	
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %lu\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
 			str_for_mnemonic(current_molecule->mnemonic_index),
-			current_molecule->literal_sel, current_molecule->literal);
+			current_molecule->literal_sel, immediate_value);
 	}
 }
 
@@ -537,14 +537,14 @@ void m_brn(molecule* current_molecule, linked_instruction* current_instruction)
 			current_molecule->s_source_file);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %lu\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
 			str_for_mnemonic(current_molecule->mnemonic_index),
-			current_molecule->literal_sel, current_molecule->literal);
+			current_molecule->literal_sel, immediate_value);
 	}
 }
 
@@ -563,14 +563,14 @@ void m_brp(molecule* current_molecule, linked_instruction* current_instruction)
 			current_molecule->s_source_file);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %lu\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
 			str_for_mnemonic(current_molecule->mnemonic_index),
-			current_molecule->literal_sel, current_molecule->literal);
+			current_molecule->literal_sel, immediate_value);
 	}
 }
 
@@ -589,14 +589,14 @@ void m_bra(molecule* current_molecule, linked_instruction* current_instruction)
 			current_molecule->s_source_file);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %lu\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
 			str_for_mnemonic(current_molecule->mnemonic_index),
-			current_molecule->literal_sel, current_molecule->literal);
+			current_molecule->literal_sel, immediate_value);
 	}
 }
 
@@ -615,14 +615,14 @@ void m_brnz(molecule* current_molecule, linked_instruction* current_instruction)
 			current_molecule->s_source_file);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %lu\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
 			str_for_mnemonic(current_molecule->mnemonic_index),
-			current_molecule->literal_sel, current_molecule->literal);
+			current_molecule->literal_sel, immediate_value);
 	}
 }
 
@@ -641,14 +641,14 @@ void m_brnn(molecule* current_molecule, linked_instruction* current_instruction)
 			current_molecule->s_source_file);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %lu\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
 			str_for_mnemonic(current_molecule->mnemonic_index),
-			current_molecule->literal_sel, current_molecule->literal);
+			current_molecule->literal_sel, immediate_value);
 	}
 }
 
@@ -667,14 +667,14 @@ void m_brnp(molecule* current_molecule, linked_instruction* current_instruction)
 			current_molecule->s_source_file);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %lu\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
 			str_for_mnemonic(current_molecule->mnemonic_index),
-			current_molecule->literal_sel, current_molecule->literal);
+			current_molecule->literal_sel, immediate_value);
 	}
 }
 
@@ -694,9 +694,9 @@ void m_lim(molecule* current_molecule, linked_instruction* current_instruction)
 			current_molecule->s_source_file);
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %u %u\n", 
 		current_instruction->word_address, 
 		current_instruction->instruction_high, 
 		current_instruction->instruction_low,
@@ -720,9 +720,9 @@ void m_bitt(molecule* current_molecule, linked_instruction* current_instruction)
 	current_instruction->instruction_low = (uint8_t)(((source & 0x07) << 5) | (bit & 0x0F));
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %u\n", 
 		current_instruction->word_address, 
 		current_instruction->instruction_high, 
 		current_instruction->instruction_low,
@@ -746,9 +746,9 @@ void p_data(molecule* current_molecule, linked_instruction* current_instruction)
 	}
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t\n", 
+		printf("%lX\t%X %X\t%s\t\n", 
 			current_instruction->word_address, 
 			current_instruction->instruction_high, 
 			current_instruction->instruction_low,
@@ -776,9 +776,9 @@ void assemble_data(uint8_t opcode, molecule* current_molecule, linked_instructio
 	current_instruction->instruction_low = (uint8_t)(((source & 0x07) << 5) | (dest & 0x1F));
 
 	//debug output
-	if(debug_enable)
+	if(g_debug_level)
 	{
-		printf("%llX\t%X %X\t%s\t%u %u %u\n", 
+		printf("%lX\t%X %X\t%s\t%u %u %u\n", 
 		current_instruction->word_address, 
 		current_instruction->instruction_high, 
 		current_instruction->instruction_low,
@@ -909,14 +909,14 @@ void write_mif(char* out_name, uint8_t* out_data, uint64_t prg_size)
 		printf("Error creating mif file!");
 		exit(1);
 	}
-	fprintf(mif_file, "DEPTH = %llu;\n", prg_size / 2);	//prg_size is in bytes, we want words
+	fprintf(mif_file, "DEPTH = %lu;\n", prg_size / 2);	//prg_size is in bytes, we want words
 	fprintf(mif_file, "WIDTH = 16;\n");
 	fprintf(mif_file, "ADDRESS_RADIX = HEX;\n");
 	fprintf(mif_file, "DATA_RADIX = HEX;\n");
 	fprintf(mif_file, "CONTENT\nBEGIN\n");
 	for(uint64_t address = 0; address < (prg_size / 2); ++address)
 	{
-		fprintf(mif_file, "%llX : %04X;\n", address, ((out_data[address * 2 + 1] << 8) | out_data[address * 2]));
+		fprintf(mif_file, "%lX : %04X;\n", address, ((out_data[address * 2 + 1] << 8) | out_data[address * 2]));
 	}
 	fprintf(mif_file, "END;\n");
 	fclose(mif_file);

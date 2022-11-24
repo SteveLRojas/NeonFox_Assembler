@@ -3,6 +3,7 @@
 /////////////////////
 extern uint32_t g_label_count;
 extern uint64_t g_curr_word_address;
+extern uint8_t g_debug_level;
 
 void set_org(char* s, int radix);
 
@@ -14,6 +15,8 @@ void to_caps(char* str);
 void remove_spaces(char* s);
 char* str_or_null(char* s);
 const char* str_for_mnemonic(uint8_t mnemonicIdx);
+const char* str_for_tgt_byte_sel(uint8_t byte_sel_idx);
+const char* str_for_lit_byte_sel(uint8_t byte_sel_idx);
 
 
 ////////////////////
@@ -88,6 +91,11 @@ void mol_set_identifier(char* identifier);
 
 void mol_handle_delim(char* s);
 void mol_inc_token_cnt();
+void debug_set_line(char* yytext);
+void debug_push_file(char* yytext);
+void debug_pop_file(char* yytext);
+void debug_push_macro(char* yytext);
+void debug_pop_macro(char* yytext);
 void mol_handle_unexpected(char* token);
 
 void mol_invalidate_current();

@@ -13,7 +13,7 @@ const char pop_macro_string[] = "@POP_MACRO:";
 char include_name_buf[256];
 char* name_table[256];
 
-int preprocess(char* asm_name, char* lst_name, uint8_t debug_enable)
+int preprocess(char* asm_name, char* lst_name, uint8_t debug_level)
 {
 	if(!asm_name || !(*asm_name))
 	{
@@ -244,7 +244,7 @@ int preprocess(char* asm_name, char* lst_name, uint8_t debug_enable)
 	}
 
 	//print macros
-	if(debug_enable)
+	if(debug_level >= 2)
 	{
 		current_macro = macro_head;
 		while(1)
@@ -412,7 +412,7 @@ int preprocess(char* asm_name, char* lst_name, uint8_t debug_enable)
 	}
 
 	//print lines
-	if(debug_enable)
+	/*if(debug_enable)
 	{
 		current_node = head;
 		while(1)
@@ -425,7 +425,7 @@ int preprocess(char* asm_name, char* lst_name, uint8_t debug_enable)
 				printf("%s", current_node->s_label);
 			printf("    %s\n", current_node->s_line);
 		}
-	}
+	}*/
 
 	//write lst file	
 	unsigned long prev_line = 0;

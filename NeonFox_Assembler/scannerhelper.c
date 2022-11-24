@@ -10,9 +10,15 @@
 ////////////////////////////
 uint32_t g_label_count;
 uint64_t g_curr_word_address;
+uint8_t g_debug_level;
 
 void set_org(char* s, int radix)
 {
+   if(g_debug_level >= 4)
+   {
+      printf( "ORG: %s, %d\n", s, radix);
+   }
+
 	while((*s < 'A' || *s > 'F') && (*s < '0' || *s > '9'))
 	{
 		++s;
@@ -33,6 +39,9 @@ void set_org(char* s, int radix)
 // String helpers //
 ////////////////////
 const char* mnemonics[] = {"ADD", "ADDC", "SUB", "SUBC", "MOVE", "TEST", "NOT", "ROR", "ROL", "AND", "XOR", "OR", "CALL", "CALLX", "CALLL", "CALLLX", "RET", "RETX", "RETL", "RETLX", "JMP", "JMPL", "NOP", "BRZ", "BRN", "BRP", "BRA", "BRNZ", "BRNN", "BRNP", "LIM", "BITT", "DATA", "ORG"};
+const char* tgt_byte_sels[] = {"S", "L", "H", "W"};
+const char* lit_byte_sels[] = {"`LL", "`LH", "`HL", "`HH", "`LW", "`HW"};
+const char* DELIM_COLON = ":";
 
 void to_caps(char* str)
 {
@@ -126,6 +135,16 @@ inline char* str_or_null(char* s)
 inline const char* str_for_mnemonic(uint8_t mnemonicIdx)
 {
    return (mnemonicIdx == (uint8_t)(-1)) ? "NONE" : mnemonics[mnemonicIdx];
+}
+
+inline const char* str_for_tgt_byte_sel(uint8_t byte_sel_idx)
+{
+   return tgt_byte_sels[byte_sel_idx];
+}
+
+inline const char* str_for_lit_byte_sel(uint8_t byte_sel_idx)
+{
+   return lit_byte_sels[byte_sel_idx];
 }
 
 
@@ -247,6 +266,11 @@ molecule* current_molecule;
 
 void mol_set_mnemonic_index(uint8_t mnemonic_index)
 {
+   if(g_debug_level >= 4)
+   {
+      printf( "INST: %s\n", str_for_mnemonic(mnemonic_index));
+   }
+
    if(has_mnemonic_index)
    {
       mol_err_dup_field(FieldMnemonic);
@@ -259,6 +283,11 @@ void mol_set_mnemonic_index(uint8_t mnemonic_index)
 
 void mol_set_target_byte_sel(uint8_t target_byte_sel)
 {
+   if(g_debug_level >= 4)
+   {
+      printf("TGT BYTE SEL: %s\n", str_for_tgt_byte_sel(target_byte_sel));
+   }
+
    if(has_target_byte_sel)
    {
       mol_err_dup_field(FieldTargetByteSel);
@@ -271,6 +300,11 @@ void mol_set_target_byte_sel(uint8_t target_byte_sel)
 
 void mol_set_literal_sel(uint8_t literal_sel)
 {
+   if(g_debug_level >= 4)
+   {
+      printf("LIT BSEL: %s\n", str_for_lit_byte_sel(literal_sel));
+   }
+
    if(has_literal_sel)
    {
       mol_err_dup_field(FieldLiteralSel);
@@ -283,6 +317,11 @@ void mol_set_literal_sel(uint8_t literal_sel)
 
 void mol_set_literal(char* literal, int radix)
 {
+   if(g_debug_level >= 4)
+   {
+      printf("LITN: %s, %d\n", literal, radix);
+   }
+
    if(has_literal)
    {
       mol_err_dup_field(FieldLiteral);
@@ -339,6 +378,11 @@ void mol_set_literal(char* literal, int radix)
 
 void mol_set_reg(char* reg)
 {
+   if(g_debug_level >= 4)
+   {
+      printf("REGS: R%s\n", reg);
+   }
+
    if(!has_reg_first)
    {
       mol_set_reg_first(reg);
@@ -369,6 +413,11 @@ inline void mol_set_reg_second(char* reg_second)
 
 void mol_set_identifier(char* identifier)
 {
+   if(g_debug_level >= 4)
+   {
+      printf("IDEN: %s\n", identifier);
+   }
+
    if (curr_token_count == 0)
    {
       // label
@@ -403,6 +452,104 @@ void mol_handle_delim(char* s)
 inline void mol_inc_token_cnt()
 {
    curr_token_count++;
+}
+
+// yytext in form "@LINE: [line_num]"
+void debug_set_line(char* yytext)
+{
+   char* text = strdup(yytext);
+   char* token = strtok(text, DELIM_COLON);        //@LINE
+   token = strtok(NULL, DELIM_COLON);              //[line_num]
+   unsigned long line_num = (unsigned long)strtol(token, NULL, 10);
+
+   if(g_debug_level >= 4)
+   {
+      printf("LINE: %s\n", token);
+   }
+
+   if(is_macro_stack_empty()){
+      peek_file()->n_source_line = line_num;
+   } else {
+      peek_macro()->n_macro_line = line_num;
+   }
+
+   free(text);
+}
+
+// yytext in form "@PUSH_FILE: [file_name]"
+void debug_push_file(char* yytext)
+{
+   char* text = strdup(yytext);
+   char* token = strtok(text, DELIM_COLON);        //@PUSH_FILE
+   token = strtok(NULL, DELIM_COLON);              //[file_name]
+
+   if(g_debug_level >= 4)
+   {
+      printf("PUSH_FILE: %s\n", token);
+   }
+
+   push_file(token);
+
+   free(text);
+}
+
+// yytext in form "@POP_FILE: [file_name]"
+void debug_pop_file(char* yytext)
+{
+   char* text = strdup(yytext);
+   char* token = strtok(text, DELIM_COLON);        //@POP_FILE
+   token = strtok(NULL, DELIM_COLON);              //[file_name]
+
+   if(g_debug_level >= 4)
+   {
+      printf("POP_FILE: %s\n", token);
+   }
+
+   pop_file();
+
+   free(text);
+}
+
+// yytext in form "@PUSH_MACRO: [label/macro_name]:[file_name]"
+void debug_push_macro(char* yytext)
+{
+   char* text = strdup(yytext);
+   char* macro_name;
+   char* macro_source_file_name; 
+
+   macro_name = strtok(text, DELIM_COLON);               //@PUSH_FILE
+   macro_name = strtok(NULL, DELIM_COLON);               //[macro_name]
+   macro_source_file_name = strtok(NULL, DELIM_COLON);   //[file_name]
+
+   if(g_debug_level >= 4)
+   {     
+      printf("PUSH_MACRO: %s\n", macro_name);  
+      printf("\tMACRO_FILE: %s\n", macro_source_file_name);
+   }
+
+   push_macro_ref(macro_name, macro_source_file_name);
+
+   // Increment source-file line just once for entire encountered macro expansion
+   peek_file()->n_source_line++;
+
+   free(text);
+}
+
+// yytext in form "@POP_MACRO: [label/macro_name]"
+void debug_pop_macro(char* yytext)
+{
+   char* text = strdup(yytext);
+   char* token = strtok(text, DELIM_COLON);        //@PUSH_FILE
+   token = strtok(NULL, DELIM_COLON);              //[macro_name]
+   
+   if(g_debug_level >= 4)
+   {
+      printf("POP_MACRO: %s\n", token);
+   }
+
+   pop_macro();
+
+   free(text);
 }
 
 void mol_handle_unexpected(char* token)
@@ -554,6 +701,11 @@ void mol_pregen_checks()
 
 void mol_generate()
 {
+   if(g_debug_level >= 4)
+   {
+      printf("EOL\n");
+   }
+
    // Validate our fields before generating
    mol_pregen_checks();
 
@@ -608,7 +760,7 @@ void mol_generate()
 void mol_print_debug(molecule* mol)
 {
    printf("MOL @ %s:%lu\n", str_or_null(mol->s_source_file), mol->n_source_line);
-   printf("    address:         %llu\n", mol->word_address);
+   printf("    address:         %lu\n", mol->word_address);
    printf("    s_label:         %s\n", str_or_null(mol->s_label));
    printf("    mnemonic_index:  %u (%s)\n", mol->mnemonic_index, str_for_mnemonic(mol->mnemonic_index));
    printf("    target_byte_sel: %u\n", mol->target_byte_sel);

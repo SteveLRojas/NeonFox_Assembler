@@ -25,7 +25,6 @@ const char bin_string[] = "-BIN";
 const char coe_string[] = "-COE";
 const char mif_string[] = "-MIF";
 
-uint8_t debug_enable;
 unsigned int asm_index = 0;
 unsigned int bin_index = 0;
 unsigned int coe_index = 0;
