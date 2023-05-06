@@ -151,7 +151,7 @@ void range_table_check(s_range* range_table, unsigned int num_segments)
 	return;
 }
 
-inline void range_table_free(s_range* range_table)
+void range_table_free(s_range* range_table)
 {
 	free(range_table);
 	return;

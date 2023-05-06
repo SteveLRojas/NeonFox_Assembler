@@ -40,6 +40,7 @@ int preprocess(char* asm_name, char* lst_name, uint8_t debug_level)
 	head->n_line = 0xffffffff;
 	head->s_label = NULL;
 	head->s_line = NULL;
+	head->next = NULL;
 
 	macro_head->formal_parameters = NULL;
 	macro_head->line_head = NULL;
